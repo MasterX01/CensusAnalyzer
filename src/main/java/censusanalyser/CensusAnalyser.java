@@ -37,4 +37,29 @@ public class CensusAnalyser {
         }
         return numOfEntries;
     }
+
+    public int loadStateCodeData(String csvFilePath) throws CensusAnalyserException {
+        int count = 0;
+        try{
+            InputValidator inputValidator = new InputValidator();
+            boolean result = inputValidator.validateFileExtension(csvFilePath);
+            if (!result)
+                throw new CensusAnalyserException("Please check extension of your file", CensusAnalyserException.ExceptionType.INCORRECT_EXTENSION);
+            Reader reader = Files.newBufferedReader(Paths.get(csvFilePath));
+            CsvToBeanBuilder<StateCodeData> csvToBeanBuilder = new CsvToBeanBuilder<StateCodeData>(reader);
+            csvToBeanBuilder.withType(StateCodeData.class);
+            csvToBeanBuilder.withIgnoreLeadingWhiteSpace(true);
+            CsvToBean<StateCodeData> csvToBean = csvToBeanBuilder.build();
+            Iterator<StateCodeData> stateCodeIterator = csvToBean.iterator();
+            while(stateCodeIterator.hasNext()) {
+                count++;
+                stateCodeIterator.next();
+            }
+        }  catch (IOException e) {
+            throw new CensusAnalyserException("Please check given path" , CensusAnalyserException.ExceptionType.CENSUS_FILE_PROBLEM);
+        } catch (RuntimeException e) {
+            throw new CensusAnalyserException("Internal file error.Please check your csv file." , CensusAnalyserException.ExceptionType.INTERNAL_FILE_ISSUES);
+        }
+        return count;
+    }
 }
